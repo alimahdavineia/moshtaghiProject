@@ -1,0 +1,102 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import moment from "moment";
+import * as XLSX from "xlsx";
+
+
+const Reporter = () => {
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [subSubCategories, setSubSubCategories] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [dataRows, setDataRows] = useState([]);
+  const [fileName, setFileName] = useState("");
+
+  useEffect(() => {
+    axios
+      .get("http://127.0.0.1:8000/areas/")
+      .then((res) => setCategories(res.data));
+  }, []);
+
+  const fetchSubCategories = (categoryId) => {
+    axios
+      .get(`http://127.0.0.1:8000/nodearea/${categoryId}`)
+      .then((res) => setSubCategories(res.data));
+  };
+
+  const fetchSubSubCategories = (subCategoryId) => {
+    axios
+      .get(
+        `http://localhost:8000/categories/${subCategoryId}/subsubcategories`
+      )
+      .then((res) => setSubSubCategories(res.data));
+  };
+
+  const handleStartDate = (e) => {
+    setStartDate(e.target.value);
+  };
+
+  const handleEndDate = (e) => {
+    setEndDate(e.target.value);
+  };
+
+  const fetchReport = () => {
+    axios
+      .get(
+        `http://localhost:8000/report?startDate=${startDate}&endDate=${endDate}`
+      )
+      .then((res) => setDataRows(res.data))
+      .catch((err) => console.log(err.message));
+  };
+
+  const exportToExcel = () => {
+    const workBook = XLSX.utils.book_new();
+    const workSheet = XLSX.utils.json_to_sheet(dataRows);
+    XLSX.utils.book_append_sheet(workBook, workSheet, "Sheet1");
+    setFileName(`report-${moment().format("YYYY-MM-DD-HHmmss")}.xlsx`);
+    XLSX.writeFile(workBook, fileName);
+  };
+
+  return (
+    <>
+      <h1>Reporter Page</h1>
+      <select onChange={(e) => fetchSubCategories(e.target.value)}>
+        <option>Select Category</option>
+        {categories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.name}
+          </option>
+        ))}
+      </select>
+      <select onChange={(e) => fetchSubSubCategories(e.target.value)}>
+        <option>Select Sub Category</option>
+        {subCategories.map((subCategory) => (
+          <option key={subCategory.id} value={subCategory.id}>
+            {subCategory.name}
+          </option>
+        ))}
+      </select>
+      <select>
+        <option>Select Sub Sub Category</option>
+        {subSubCategories.map((subSubCategory) => (
+          <option key={subSubCategory.id} value={subSubCategory.id}>
+            {subSubCategory.name}
+          </option>
+        ))}
+      </select>
+      <div>
+        <label>Start Date:</label>
+        <input type="date" onChange={handleStartDate} />
+      </div>
+      <div>
+        <label>End Date:</label>
+        <input type="date" onChange={handleEndDate} />
+      </div>
+      <button onClick={fetchReport}>Generate Report</button>
+      <button onClick={exportToExcel}>Export to Excel</button>
+    </>
+  );
+};
+
+export default Reporter;

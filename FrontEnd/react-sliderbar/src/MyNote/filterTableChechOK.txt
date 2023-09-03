@@ -1,0 +1,97 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Table from "react-bootstrap/Table";
+
+
+
+function Asset() {
+  const [filter, setFilter] = useState([]);
+  const [data, setData] = useState([
+    {id:1,name:'a',age:25},
+    {id:2,name:'b',age:12},
+    {id:3,name:'c',age:32},
+    {id:4,name:'d',age:31}
+
+  ]);
+
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     const { data } = await axios.get("http://127.0.0.1:8000/assets/");
+  //     setAssets(data);
+  //   }
+  //   fetchData();
+  // }, []);
+  
+const handleFilterChange= (enent)=>{
+  setFilter(event.target.value);
+}
+
+const filteredData=data.filter((item)=> 
+              item.name.toString().toLowerCase().includes(
+                filter.toString().toLowerCase())
+);
+
+
+
+
+  return (
+    <div>
+      <input type="text" value={filter} onChange={handleFilterChange} />
+       <Table id="FailTable" striped bordered hover variant="dark">
+      <thead>
+      <tr>
+          <th>ds</th>
+          <th><input type="text" value={filter} onChange={handleFilterChange} /></th>
+          <th>Agewfgve</th>
+          {/* <th>  آبرسانی/منطقه</th>
+          <th> نام نقطه / محل استقرار</th>
+          <th> نام تجهیز </th>
+          <th> مدل تجهیز </th>
+          <th>تعداد </th>
+          <th>شماره اموال </th> */}
+
+        </tr>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Age</th>
+          {/* <th>  آبرسانی/منطقه</th>
+          <th> نام نقطه / محل استقرار</th>
+          <th> نام تجهیز </th>
+          <th> مدل تجهیز </th>
+          <th>تعداد </th>
+          <th>شماره اموال </th> */}
+
+        </tr>
+        
+      </thead>
+      <tbody>
+        {filteredData.map((item) =>(
+          
+          <tr key={item.id}>
+            <td>{item.id}</td>
+            <td>{item.name}</td>
+            <td>{item.age}</td>
+          </tr>
+          //   <tr>
+          //   <td>{asset.id_areas}</td>
+          //   <td>{asset.id_nodes}</td>
+          //   <td>{asset.id_devices}</td>
+          //   <td>{asset.id_modelCopmanys}</td>
+          //   <td>{asset.No_Assets}</td>
+          //   <td>{asset.asset_number}</td>
+          // </tr>
+
+        ))}
+      
+
+      </tbody>
+    </Table>
+
+    </div>
+   
+  );
+}
+
+export default Asset;

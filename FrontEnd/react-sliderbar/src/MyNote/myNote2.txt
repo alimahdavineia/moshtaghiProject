@@ -1,0 +1,83 @@
+import React, { useState, useEffect } from 'react';
+import "bootstrap/dist/css/bootstrap.min.css";
+import Select from 'react-select';
+
+
+function Source() {
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(null);
+
+  useEffect(() => {
+    // Fetch categories and set to state
+    fetch('http://127.0.0.1:8000/areas/')
+      .then(response => response.json())
+      .then(data => setCategories(data))
+      .catch(error => console.error(error));
+  }, []);
+
+  useEffect(() => {
+    
+    // Fetch subcategories based on selectedCategoryId and set to state
+    if (selectedCategoryId) {
+      
+      fetch(`http://127.0.0.1:8000/nodearea/${selectedCategoryId}`)
+        .then(response => response.json())
+        .then(data => setSubcategories(data))
+        .catch(error => console.error(error));
+    }
+  }, [selectedCategoryId]);
+
+  function handleCategoryChange(event) {
+    setSelectedCategoryId(event.target.value);
+    setSelectedSubcategoryId(null); // Reset subcategory when category changes
+  }
+
+  function handleSubcategoryChange(event) { 
+    setSelectedSubcategoryId(event.target.value);
+  }
+
+  console.log("categories")
+  console.log(categories)
+
+  console.log("selectedCategoryId")
+  console.log(selectedCategoryId)
+
+  console.log("subcategories")
+  console.log(subcategories)
+
+  console.log("selectedSubcategoryId")
+  console.log(selectedSubcategoryId)
+
+  return (
+    <div>
+      <select value={selectedCategoryId} onChange={handleCategoryChange}>
+        <option value="">Select a category</option>
+        {categories.map(category => (
+          <option key={category.id} value={category.id}>{category.node_name}</option>
+        ))}
+      </select>
+
+      {selectedCategoryId && (
+        <select value={selectedSubcategoryId} onChange={handleSubcategoryChange}>
+          <option value="">Select a subcategory</option>
+          {subcategories.map(subcategory => (
+            <option key={subcategory.id} value={subcategory.id}>{subcategory.area_name}</option>
+          ))}
+        </select>
+      )}
+
+      <Select  options={subcategories.map(subcategory => (
+            <option key={subcategory.id} value={subcategory.id}>{subcategory.area_name}</option>
+          ))} 
+      
+      />
+
+     
+      
+    </div>
+  );
+}
+
+export default Source;

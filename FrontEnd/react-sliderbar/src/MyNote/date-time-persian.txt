@@ -1,0 +1,1 @@
+https://shahabyazdi.github.io/react-multi-date-picker/fa/installation/#npm

@@ -1,0 +1,585 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Form ,Button, Alert,Card,Carousel,Row,Col,InputGroup } from 'react-bootstrap';
+import logo1 from '../images/water1.jpg';
+import logo2 from '../images/scadaroom.jpg';
+import logo3 from '../images/water3.jpg';
+
+const Source = () => {
+  const [AreaSelect, setAreaSelect] = useState([]);
+  const [NodeSelect, setNodeSelect] = useState([]);
+  const [deviceSelect, setDeviceSelect] = useState([]);
+  const [componyModelSelect, setComponyModelSelect] = useState([]);
+
+  const [enSubmit, setEnSubmit] = useState(true);
+
+  const [dataArea, setDataArea] = useState("");
+  const [dataNode, setDataNode] = useState("");
+  const [dataDevice, setDataDevice] = useState("");
+  const [componyModel, setComponyModel] = useState("");
+  const [noAssets, setNoAssets] = useState("1");
+  const [numberAsset, setNumberAsset] = useState("");
+  const [dataLocation, setDataLocation] = useState("");
+  const [dataLocationCode, setDataLocationCode] = useState("");
+  const [enNoAssets, setEnNoAssets] = useState(false);
+
+  const [alertRepeted, setAlertRepeted] = useState(false);
+  const [alertOkSave, setAlertOkSave] = useState(false);
+  const [alertErrSave, setAlertErrSave] = useState(false);
+
+  const [switchState, setSwitchState] = useState(true);
+
+  useEffect(() => {
+    axios
+      .get("http://127.0.0.1:8000/areas/")
+      .then((res) => setAreaSelect(res.data));
+      
+      
+      
+  }, []);
+
+  const fetchNodeSelect = (categoryId) => {
+    axios
+      .get(`http://127.0.0.1:8000/nodearea/${categoryId}`)
+      .then((res) => setNodeSelect(res.data));
+       setDeviceSelect([""])
+       setComponyModelSelect([""])
+       setDataArea(categoryId);
+      
+  };
+
+
+  const fetchDeviceSelect = (subCategoryId) => {
+    axios
+      .get(`http://localhost:8000/device/`)
+      .then((res) => setDeviceSelect(res.data));     
+      setDataNode(subCategoryId);
+      setComponyModelSelect([])
+  };
+
+  const fetchComponySelect = (deviceName) => {
+    
+    axios
+    .get(`http://127.0.0.1:8000/componyDevice/${deviceName}`)
+    .then((res) => setComponyModelSelect(res.data));
+    setDataDevice(deviceName);
+    
+  };
+  
+const fetchComponySet = (componyName) => {
+    if(componyName){
+      setComponyModel(componyName)
+      setEnSubmit(false)
+
+    }else{
+      setComponyModel("")
+
+    }
+  };
+  
+const registerCodeCitect = (citectCode) => {
+    if(citectCode){
+        setDataLocationCode(citectCode)
+    }else{
+      setDataLocationCode("")
+    }
+  }; 
+const registerNoAssets = (NoAssets) => {
+
+    if(NoAssets){
+        setNoAssets(NoAssets)
+        setNumberAsset("")
+        setDataLocation("")
+        setDataLocationCode("")
+        
+    }else{
+      setNoAssets("")
+    }
+  };   
+const registerNumberAssets = (NumberAssets) => {
+    if(NumberAssets){
+        setNumberAsset(NumberAssets)
+    }else{
+       setNumberAsset("")
+    }
+  }; 
+const registerLocationAsset = (location) => {
+
+      if (location){
+        setDataLocation(location)
+      }else{
+        setDataLocation("")
+      }
+
+};
+//Redio button Switch button change
+const handleChange=(e)=>{
+  // setField('بدون اموال', e.target.checked)
+  setSwitchState(!switchState)
+  setEnNoAssets(switchState)
+  // بعد از هر بار تعویض دارای اموال و یا بدون اموال مقادیر صفر می شوند
+  const element1=document.getElementById('noAssetInput');
+  element1.value= '1';
+  const element2=document.getElementById('numberAssetsInput');
+  element2.value= '';
+  const element3=document.getElementById('locationInput');
+  element3.value= '';
+  const element4=document.getElementById('codeInput');
+  element4.value= '';
+ 
+}
+
+const funsetAlertErrSave=()=>{
+  setAlertErrSave(false)
+
+  // window.location.reload();
+}
+const funsetAlertOkSave=()=>{
+  setAlertOkSave(false)
+
+  // window.location.reload();
+}
+const funsetAlertRepeted=()=>{
+  setAlertRepeted(false)
+  // window.location.reload();
+}
+
+
+ 
+const registerAsset = () => {// تابع ثبت دارایی جدید 
+    
+  let formField =new FormData()
+  formField.append('id_areas',dataArea)
+  formField.append('id_nodes',dataNode)
+  formField.append('id_devices',dataDevice)
+  formField.append('id_modelCopmanys',componyModel)
+  formField.append('No_Assets',noAssets)
+  formField.append('asset_number',numberAsset)
+  formField.append('asset_location',dataLocation)
+  formField.append('asset_location_code',dataLocationCode)
+  formField.append('myChoice',switchState)
+  console.log(formField)
+  axios({
+    method:'post',
+    url:`http://127.0.0.1:8000/addAsset/`,
+    data : formField,
+  }).then((response) => {
+    console.log(response.data)  
+    if (response.data=="Data Repeted"){
+      setAlertRepeted(true)
+      setEnSubmit(true)
+      
+
+    }else if (response.data=="Save Data"){
+      setAlertOkSave(true)
+      setEnSubmit(true)
+    }else if(response.data=="Not Save Data"){
+      setAlertErrSave(true)
+      setEnSubmit(true)
+    }
+  })    
+  };
+
+
+
+  return (
+    <>
+    <Form>
+
+    
+  <div class="container-fluid mt-1">
+      <h4>صفحه ثبت دارایی های سامانه اسکادا</h4>
+      <div //Alert part
+      class="row p-0 bg-dark text-white" 
+      >
+        <div>
+
+        <Alert // آلارم ثبت تکراری 
+        show={alertRepeted} variant="warning">
+        <Alert.Heading> تکرار در ثبت دارایی </Alert.Heading>
+        <p>
+          کاربر گرامی این دارایی قبلاً ثبت شده است در صورت نیاز به ویرایش به صفحه ویرایش مراجه فرمائید.
+        </p>
+        <hr />
+        <div className="d-flex justify-content-end">
+          <Button onClick={() => funsetAlertRepeted(false)} variant="outline-warning">
+            بستن پیغام
+          </Button>
+        </div>
+        </Alert>
+
+      <Alert //آلارم ثبت موفق
+       show={alertOkSave} variant="success">
+        <Alert.Heading>ثبت با موفقیت انجام شد </Alert.Heading>
+        <p>
+          کاربر گرامی ثبت با موفقیت انجام شد.در صورت نیاز با مرکز تله متری تماس حاصل شود 35223600
+        </p>
+        <hr />
+        <div className="d-flex justify-content-end">
+          <Button onClick={() => funsetAlertOkSave()} variant="outline-success">
+            بستن پیغام
+          </Button>
+        </div>
+      </Alert>
+
+      <Alert  // ثبت ناموفق
+      show={alertErrSave} variant="danger">
+        <Alert.Heading>ثبت نا موفق  </Alert.Heading>
+        <p>
+          کاربر گرامی این دارایی ثبت نمی شود ممکن است گزینه ها به درستی انتخاب نشده باشند ویا ایراد در اتصال باشد. در صورت نیاز با مرکز تله متری تماس حاصل شود 35223600
+        </p>
+        <hr />
+        <div className="d-flex justify-content-end">
+          <Button onClick={() => funsetAlertErrSave() } variant="outline-danger">
+            بستن پیغام
+          </Button>
+        </div>
+      </Alert>
+        
+        </div>
+       
+      </div> 
+      <div //ستونهای وسط
+      class="row">
+        <div // ستون سمت راست
+        class="col-md-6 p-3 bg-dark text-white">
+        
+        <Card // محل آبرسانی/اتفاقات و یا محل استقرار
+          bg="primary"
+          text= 'white'          
+          className="mb-2"
+        >
+          <Card.Header> 1: آبرسانی/اتفاقات</Card.Header>
+          <Card.Body>
+            <Card.Title></Card.Title>
+            <Card.Text>
+            <Form.Select onChange={(e) => fetchNodeSelect(e.target.value)} aria-label="Select Area">
+            <option> انتخاب....  </option>
+            {AreaSelect.map((areas) => (
+            <option key={areas.id} value={areas.id}>
+            {areas.area_name}
+            </option>
+          
+        ))}
+      </Form.Select>
+            </Card.Text>
+          </Card.Body>
+        </Card>
+     
+        <Card // نام نقطه و یا محل استقرار تجهیز
+          bg="success"
+          text='white'
+          className="mb-2"
+        >
+          <Card.Header>2: تاسیس/نقطه</Card.Header>
+          <Card.Body>
+            <Card.Title></Card.Title>
+            <Card.Text>
+            <Form.Select required onChange={(e) => fetchDeviceSelect(e.target.value)} aria-label="Select Node">
+      <option>انتخاب ...</option>
+      {NodeSelect.map((nodes) => (
+          <option key={nodes.id} value={nodes.id}>
+            {nodes.node_name}
+          </option>
+          
+        ))}
+      </Form.Select>
+            </Card.Text>
+          </Card.Body>
+        </Card>
+
+        <Card // نام تجهیز مورد نظر
+          bg="warning"
+          text='white'
+          className="mb-2"
+        >
+          <Card.Header>3: تجهیزات / قطعات</Card.Header>
+          <Card.Body>
+            <Card.Title></Card.Title>
+            <Card.Text>
+            <Form.Select required onChange={e=> fetchComponySelect(e.target.value)} aria-label="Select Asset">
+      <option>انتخاب ...</option>
+      {deviceSelect.map((dev) => (
+          <option key={dev.id} value={dev.device_name} >
+            {dev.device_name} {dev.device_code}
+          </option>
+
+        ))}
+           </Form.Select>
+            </Card.Text>
+          </Card.Body>
+        </Card>
+
+        <Card //نام شرکت تولید کننده به همراه مدل تجهیز
+          bg="danger "
+          text='white'
+          className="mb-2"
+        >
+          <Card.Header>4: نام شرکت تولید کننده :</Card.Header>
+          <Card.Body>
+            <Card.Title></Card.Title>
+            <Card.Text>
+            <Form.Select required="required" class="form-control" onChange={e=> fetchComponySet(e.target.value)} aria-label="Select Compony">
+      <option>انتخاب ...</option>
+      {componyModelSelect.map((ComponyModel) => (
+          <option key={ComponyModel.id} value={ComponyModel.id} >
+            {ComponyModel.model_company_model_code}
+          </option>
+
+        ))}
+           </Form.Select>
+            </Card.Text>
+          </Card.Body>
+        </Card>
+
+      <br/>
+
+
+        </div>
+    
+        <div //ستون سمت چپ
+        class="col-md-6 p-3 bg-dark text-white">
+        <Form.Group // رادیو باتن برا ی انتخاب اموال دار و بدون اموال
+        as={Row} className="mb-3">
+          <Col sm={10}>
+            <Form.Check
+              type="switch"
+              id="custom-switch"
+              label="آیا تجهیز مورد نظر اموال دارد؟ "
+              defaultChecked={switchState}
+              onChange={handleChange}
+            />
+          </Col>
+        </Form.Group>
+        <Card //no assets card
+          bg="secondary"
+          text='white'
+          className="mb-2"
+          hidden={!enNoAssets}
+        >
+          <Card.Header>5: تعداد </Card.Header>
+          <Card.Body>
+            <Card.Title></Card.Title>
+            <Card.Text>
+            <Form.Control
+        type="number"
+        id="noAssetInput"
+        aria-describedby="numberAssets"
+        maxLength="5"
+        onChange={e=> registerNoAssets(e.target.value)}
+      />
+      <Form.Text  id="noAssets">
+      </Form.Text>
+     
+            </Card.Text>
+          </Card.Body>
+        
+        </Card>
+        <Card //number Assets card
+          bg="secondary"
+          text='white'
+          className="mb-2"
+          hidden={enNoAssets}
+        >
+          <Card.Header>5: شماره اموال  </Card.Header>
+          <Card.Body>
+            <Card.Title></Card.Title>
+            <Card.Text>
+            <Form.Control
+        type="number"
+        id="numberAssetsInput"
+        aria-describedby="numberAssets"
+        maxLength="5"
+        onChange={e=> registerNumberAssets(e.target.value)}
+      />
+      <Form.Text  id="numberAssets" muted>
+         
+      </Form.Text>
+            </Card.Text>
+          </Card.Body>
+        
+        </Card>
+       
+        <Card //location asset card
+          bg="info"
+          text='white'
+          className="mb-2"
+          hidden={enNoAssets}
+
+        >
+          <Card.Header>6: نام/محل نصب  </Card.Header>
+          <Card.Body>
+            <Card.Title></Card.Title>
+            <Card.Text>
+            <Form.Control
+        type="text"
+        id="locationInput"
+        aria-describedby="location"
+        onChange={e=> registerLocationAsset(e.target.value)}
+      />
+      <Form.Text required muted  aria-label="Register LocationAsset">
+         
+      </Form.Text>
+          </Card.Text>
+          </Card.Body>
+        
+        </Card>
+        <Card //citect code asset card
+          bg="dark "
+          text='white'
+          className="mb-2"
+          hidden={enNoAssets}
+          onChange={e=> registerCodeCitect(e.target.value)}
+        >
+          <Card.Header>7: کد دارایی سایتکت </Card.Header>
+          <Card.Body>
+            <Card.Title></Card.Title>
+            <Card.Text>
+            <Form.Control
+        type="text"
+        id="codeInput"
+        aria-describedby="codeCitect"
+      />
+      <Form.Text muted  aria-label="Register codeCitect">
+         
+      </Form.Text>
+          </Card.Text>
+          </Card.Body>
+        
+        </Card>
+
+        <div // دکمه ثبت
+        dir="ltr">
+        <Button variant="danger" onClick={registerAsset} > ثبت دارایی </Button>
+        </div>
+
+        </div>
+      </div>
+      <div // نمایش اسلایدرهای پایین صفحه
+      class="row">
+      <div class="col-md-4 p-3 bg-dark text-white">
+      <Carousel>
+      <Carousel.Item interval={1000}>
+        <img
+          className="d-block w-100"
+          src={logo1}
+          alt="First slide"
+        />
+        <Carousel.Caption>
+          {/* <h3>First slide label</h3>
+          <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p> */}
+        </Carousel.Caption>
+      </Carousel.Item>
+      <Carousel.Item interval={1000}>
+        <img
+          className="d-block w-100"
+          src={logo2}
+          alt="Second slide"
+        />
+        <Carousel.Caption>
+          {/* <h3>Second slide label</h3>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p> */}
+        </Carousel.Caption>
+      </Carousel.Item>
+      <Carousel.Item interval={1000}>
+        <img
+          className="d-block w-100"
+          src={logo3}
+          alt="Third slide"
+        />
+        <Carousel.Caption>
+          {/* <h3>Third slide label</h3>
+          <p>
+            Praesent commodo cursus magna, vel scelerisque nisl consectetur.
+          </p> */}
+        </Carousel.Caption>
+        </Carousel.Item>
+      </Carousel>
+      </div>
+      <div class="col-md-4 p-3 bg-dark text-white">
+      <Carousel>
+      <Carousel.Item interval={1000}>
+        <img
+          className="d-block w-100"
+          src={logo1}
+          alt="First slide"
+        />
+        <Carousel.Caption>
+          {/* <h3>First slide label</h3>
+          <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p> */}
+        </Carousel.Caption>
+      </Carousel.Item>
+      <Carousel.Item interval={1000}>
+        <img
+          className="d-block w-100"
+          src={logo2}
+          alt="Second slide"
+        />
+        <Carousel.Caption>
+          {/* <h3>Second slide label</h3>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p> */}
+        </Carousel.Caption>
+      </Carousel.Item>
+      <Carousel.Item interval={1000}>
+        <img
+          className="d-block w-100"
+          src={logo3}
+          alt="Third slide"
+        />
+        <Carousel.Caption>
+          {/* <h3>Third slide label</h3>
+          <p>
+            Praesent commodo cursus magna, vel scelerisque nisl consectetur.
+          </p> */}
+        </Carousel.Caption>
+        </Carousel.Item>
+      </Carousel>
+      </div>
+      <div class="col-md-4 p-3 bg-dark text-white">
+      <Carousel>
+      <Carousel.Item interval={1000}>
+        <img
+          className="d-block w-100"
+          src={logo1}
+          alt="First slide"
+        />
+        <Carousel.Caption>
+          {/* <h3>First slide label</h3>
+          <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p> */}
+        </Carousel.Caption>
+      </Carousel.Item>
+      <Carousel.Item interval={1000}>
+        <img
+          className="d-block w-100"
+          src={logo2}
+          alt="Second slide"
+        />
+        <Carousel.Caption>
+          {/* <h3>Second slide label</h3>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p> */}
+        </Carousel.Caption>
+      </Carousel.Item>
+      <Carousel.Item interval={1000}>
+        <img
+          className="d-block w-100"
+          src={logo3}
+          alt="Third slide"
+        />
+        <Carousel.Caption>
+          {/* <h3>Third slide label</h3>
+          <p>
+            Praesent commodo cursus magna, vel scelerisque nisl consectetur.
+          </p> */}
+        </Carousel.Caption>
+        </Carousel.Item>
+      </Carousel>
+      </div>
+      
+      </div>     
+  </div>
+  </Form>
+    </>
+  );
+};
+
+export default Source;

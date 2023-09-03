@@ -1,0 +1,68 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import ReactTable from 'react-table';
+import 'react-table/react-table.css';
+import ReactPaginate from 'react-paginate';
+
+const TableComponent = () => {
+  const [data, setData] = useState([]);
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('id');
+  const [pageNumber, setPageNumber] = useState(0);
+  const itemsPerPage = 10;
+  const pagesVisited = pageNumber * itemsPerPage;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await axios.get(`http://localhost:8000/api/data/?search=${search}&ordering=${sort}`);
+      setData(result.data);
+    };
+    fetchData();
+  }, [search, sort, pageNumber]);
+
+  const pageCount = Math.ceil(data.length / itemsPerPage);
+  const changePage = ({ selected }) => {
+    setPageNumber(selected);
+  };
+
+  const columns = [
+    {
+      Header: 'ID',
+      accessor: 'id',
+    },
+    {
+      Header: 'Name',
+      accessor: 'name',
+    },
+    {
+      Header: 'Age',
+      accessor: 'age',
+    },
+  ];
+
+  return (
+    <div>
+      <input type="text" placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)} />
+      <ReactTable
+        data={data.slice(pagesVisited, pagesVisited + itemsPerPage)}
+        columns={columns}
+        defaultPageSize={itemsPerPage}
+        sortable={true}
+        onSortedChange={(newSort) => setSort(newSort.id)}
+      />
+      <ReactPaginate
+        previousLabel={'Previous'}
+        nextLabel={'Next'}
+        pageCount={pageCount}
+        onPageChange={changePage}
+        containerClassName={'pagination'}
+        previousLinkClassName={'previous-page'}
+        nextLinkClassName={'next-page'}
+        disabledClassName={'pagination-disabled'}
+        activeClassName={'pagination-active'}
+      />
+    </div>
+  );
+};
+
+export default TableComponent;

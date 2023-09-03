@@ -1,0 +1,46 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+
+
+const Source = () => {
+  const [AreaSelect, setAreaSelect] = useState([]);
+
+useEffect(() => {
+  axios
+    .get("http://127.0.0.1:8000/areas/")
+    .then((res) => setAreaSelect(res.data));
+    
+}, []);
+ 
+const [filteredOptions,setFilteredOptions]=useState(AreaSelect);
+const [selectedOption,setSelectedOption]=useState("");
+
+const handeleFilterChange =(event)=>{
+  const filterValue=event.target.value.toString().toLowerCase();
+  const myfilteredOptions=AreaSelect.filter((option) => option.area_name.toString().toLowerCase().includes(filterValue));
+  setFilteredOptions(myfilteredOptions);
+
+};
+
+const handeleOptionSelect=(event)=> {
+  setSelectedOption(event)
+}
+  return (
+    <div>
+  
+      <input type="text" onChange={handeleFilterChange}/>
+      <select value={selectedOption} onChange={((e)=>handeleOptionSelect( e.target.value))} >
+        {filteredOptions.map((area)=>(
+          <option key={area.id} value={area.area_name}>
+            {area.area_name} 
+
+          </option>
+        ))}
+
+      </select>
+    </div>
+  );
+};
+
+export default Source;

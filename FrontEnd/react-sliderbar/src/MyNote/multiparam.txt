@@ -1,0 +1,25 @@
+import React, { useState } from 'react';
+
+const FruitSelectDropdown = ({ fruitDetector }) => {
+  const [currentFruit, setCurrentFruit] = useState(fruitDetector);
+
+  const changeFruit = (newFruit) => {
+    setCurrentFruit(newFruit);
+    // pass multiple parameters here
+    handleMultipleParams(newFruit, 'param2', 'param3');
+  };
+
+  const handleMultipleParams = (param1, param2, param3) => {
+    // handle logic here
+  };
+
+  return (
+    <form>
+      <select onChange={(event) => changeFruit(event.target.value)} value={currentFruit}>
+        <option value="apple">Apple</option>
+        <option value="banana">Banana</option>
+        <option value="orange">Orange</option>
+      </select>
+    </form>
+  );
+};
